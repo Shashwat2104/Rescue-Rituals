@@ -1,4 +1,4 @@
-# Events API
+# 🎉 Events API
 
 A small, focused, secure **Events Management REST API** built with NestJS,
 JavaScript (CommonJS), PostgreSQL, Sequelize, JWT, and Swagger.
@@ -7,9 +7,12 @@ It is intentionally scoped to an MVP: registration, login, JWT-protected event
 CRUD with ownership rules, RSVP with capacity and duplicate protection, and an
 attendees endpoint.
 
+The JWT token lifetime is controlled by the `JWT_EXPIRES_IN` environment variable
+(default: `1h`).
+
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 | Concern        | Choice                                  |
 | -------------- | --------------------------------------- |
@@ -23,152 +26,151 @@ attendees endpoint.
 | Validation     | `class-validator` + `class-transformer` |
 | Docs           | **Swagger / OpenAPI** (`/api/docs`)     |
 | Migrations     | Sequelize CLI                           |
+| Testing        | **Jest** + `babel-jest`                |
 
-> **No TypeScript.** All sources are `.js` files using `require` / `module.exports`.
+> **📝 No TypeScript.** All sources are `.js` files using `require` / `module.exports`.
 
 ---
 
-## Setup
+## 🚀 Quick Start
 
-### 1. Install dependencies
+### 1️⃣ Install dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Configure environment variables
+### 2️⃣ Configure environment variables
 
-Copy `.env.example` to `.env` and edit values:
+Copy `.env.example` to `.env`:
 
 ```bash
 cp .env.example .env
 ```
 
-The most important variables are:
+> ⚠️ **Never commit `.env`** — it's already in `.gitignore`.
 
-```env
-NODE_ENV=development
-PORT=3000
+### 3️⃣ Set up the PostgreSQL database
 
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_NAME=events_db
-DATABASE_USER=postgres
-DATABASE_PASSWORD=postgres
-DATABASE_LOGGING=false
+Create the `events_db` database using your preferred method:
 
-JWT_SECRET=replace-with-a-long-random-string
-JWT_EXPIRES_IN=1h
-
-BCRYPT_SALT_ROUNDS=10
-```
-
-> Never commit `.env`. The `.gitignore` already excludes it.
-
-### 3. Create the PostgreSQL database
-
-Either use your favourite client (`psql`, pgAdmin, etc.):
-
+**Option A — Using `psql` CLI:**
 ```sql
 CREATE DATABASE events_db;
 ```
 
-…or use the bundled `sequelize-cli`:
-
+**Option B — Using `sequelize-cli`:**
 ```bash
 npm run db:create
 ```
 
-### 4. Run migrations
+### 4️⃣ Run migrations
 
 ```bash
 npm run db:migrate
 ```
 
-This applies, in order:
+This creates three tables in order:
 
-1. `20260101000001-create-users.js`
-2. `20260101000002-create-events.js`
-3. `20260101000003-create-rsvps.js`
+1. 📋 `users` — user accounts
+2. 📅 `events` — event records
+3. 🎟️ `rsvps` — event RSVPs/attendances
 
-To undo all migrations:
+To **undo all migrations** (drop all tables):
 
 ```bash
 npm run db:migrate:undo
 ```
 
-### 5. Start the application
+### 5️⃣ Start the application
 
 ```bash
-# Development (Babel on-the-fly transpile)
+# 🧑‍💻 Development mode (auto-reload)
 npm run start
-
-# Or the explicit dev alias
+# or
 npm run start:dev
-```
 
-Production build (optional):
-
-```bash
+# 🔨 Production mode (requires build first)
 npm run build
 npm run start:prod
 ```
 
-The API listens on `http://localhost:3000` by default. Logs use the Nest
-default logger and contain no sensitive data.
+The API is available at `http://localhost:3000`. No sensitive data is logged.
 
 ---
 
-## API Documentation
+## 📚 API Documentation
 
-Swagger UI:
+### 🔷 Swagger UI
+
+Interactive API docs with "Try it out" support:
 
 ```
 http://localhost:3000/api/docs
 ```
 
-OpenAPI JSON:
+### 🔶 OpenAPI JSON
+
+Machine-readable spec:
 
 ```
 http://localhost:3000/api/docs-json
 ```
 
-The Swagger UI is wired with a JWT Bearer scheme — use the **Authorize**
-button at the top to paste a token from `/auth/login` and try protected
-routes directly.
+### 🔐 Using JWT in Swagger
+
+1. Register or login via the endpoints
+2. Copy the `accessToken` from the response
+3. Click the **Authorize** 🔒 button at the top
+4. Paste: `Bearer <your_token>`
+5. Test protected endpoints directly!
 
 ---
 
-## API Endpoints
+## 🛣️ API Endpoints
 
-| Method | Path                            | Auth | Description                         |
-| ------ | ------------------------------- | ---- | ----------------------------------- |
-| POST   | `/auth/register`                | —    | Register a new user                 |
-| POST   | `/auth/login`                   | —    | Log in and obtain a JWT             |
-| POST   | `/events`                       | JWT  | Create an event                     |
-| GET    | `/events`                       | —    | List all events                     |
-| GET    | `/events/:id`                   | —    | Get a single event                  |
-| PATCH  | `/events/:id`                   | JWT  | Update an event you own             |
-| DELETE | `/events/:id`                   | JWT  | Delete an event you own             |
-| POST   | `/events/:id/rsvp`              | JWT  | RSVP (join) an event                |
-| GET    | `/events/:id/attendees`         | JWT  | List the attendees of an event      |
+### 🔐 Authentication
 
-### HTTP status codes
+| Method | Path               | Auth | Description                     |
+| ------ | ------------------ | ---- | ------------------------------- |
+| POST   | `/auth/register`   | —    | Register a new user account     |
+| POST   | `/auth/login`      | —    | Login and receive JWT token     |
 
-| Code | Meaning                                                                  |
-| ---- | ------------------------------------------------------------------------ |
-| 200  | OK / standard success                                                    |
-| 201  | Resource created                                                         |
-| 204  | Resource deleted                                                         |
-| 400  | Validation failed or business invariant violated (e.g. `endDate <= startDate`) |
-| 401  | Missing / invalid / expired JWT                                          |
-| 403  | Authenticated user is not the event owner                                |
-| 404  | Resource (event) does not exist                                          |
-| 409  | Conflict — duplicate email, duplicate RSVP, or event at capacity         |
+### 📅 Events
+
+| Method | Path                 | Auth | Description                          |
+| ------ | -------------------- | ---- | ------------------------------------ |
+| POST   | `/events`            | JWT  | Create a new event                   |
+| GET    | `/events`            | —    | List all public events               |
+| GET    | `/events/:id`        | —    | Get a single event by ID             |
+| PATCH  | `/events/:id`        | JWT  | Update an event (owner only)         |
+| DELETE | `/events/:id`        | JWT  | Delete an event (owner only)          |
+
+### 🎟️ RSVPs
+
+| Method | Path                   | Auth | Description                        |
+| ------ | ---------------------- | ---- | ---------------------------------- |
+| POST   | `/events/:id/rsvp`     | JWT  | RSVP / join an event               |
+| GET    | `/events/:id/attendees`| JWT  | List all attendees for an event    |
+
+### 📊 HTTP Status Codes
+
+| Code | Meaning                                                                |
+| ---- | ---------------------------------------------------------------------- |
+| 200  | ✅ OK / standard success                                               |
+| 201  | 🆕 Resource created successfully                                       |
+| 204  | 🗑️ Resource deleted (no body)                                          |
+| 400  | ❌ Validation failed or business rule violated (e.g., `endDate <= startDate`) |
+| 401  | 🔒 Missing / invalid / expired JWT token                              |
+| 403  | 🚫 Authenticated user is not the event owner                           |
+| 404  | 🔍 Resource (event) not found                                         |
+| 409  | ⚠️ Conflict — duplicate email, duplicate RSVP, or event at capacity   |
 
 ---
 
-## Data Model
+## 💾 Data Model
+
+### Entity Relationship Diagram
 
 ```
 ┌──────────┐ 1     * ┌──────────┐ 1     * ┌──────────┐
@@ -179,15 +181,20 @@ routes directly.
      └────────────────────────────────────────┘
 ```
 
-* A `User` owns zero or more `Event`s (`events.created_by` → `users.id`).
-* An `Event` has zero or more `RSVP`s (`rsvps.event_id` → `events.id`).
-* A `User` has zero or more `RSVP`s (`rsvps.user_id` → `users.id`).
-* `users.email` is **UNIQUE**.
-* `rsvps(event_id, user_id)` is **UNIQUE** (a user can RSVP at most once per event).
-* `events.capacity` has a CHECK constraint `> 0`.
-* FK relationships use `ON DELETE CASCADE`.
+### Key Relationships
 
-### Mermaid ER diagram
+- 👤 **User → Events** — A user can create zero or more events (`events.created_by` → `users.id`)
+- 📅 **Event → RSVPs** — An event can have zero or more RSVPs (`rsvps.event_id` → `events.id`)
+- 👤 **User → RSVPs** — A user can have zero or more RSVPs (`rsvps.user_id` → `users.id`)
+
+### Database Constraints
+
+- 📧 `users.email` is **UNIQUE** — no duplicate accounts
+- 🎟️ `rsvps(event_id, user_id)` is **UNIQUE** — a user can RSVP at most once per event
+- 📊 `events.capacity` has a CHECK constraint `> 0` — must be positive
+- 🗑️ All FK relationships use `ON DELETE CASCADE`
+
+### Mermaid ER Diagram
 
 ```mermaid
 erDiagram
@@ -224,7 +231,7 @@ erDiagram
 
 ---
 
-## Authentication Flow
+## 🔐 Authentication Flow
 
 ```
 ┌──────────────┐                          ┌──────────────┐
@@ -241,33 +248,35 @@ erDiagram
        │  POST /auth/login                     │
        │  { email, password }                  │
        │ ─────────────────────────────────────►│
-       │  200 { accessToken, user }            │
+       │  200 { accessToken, user }           │
        │ ◄─────────────────────────────────────│
        │                                       │
-       │  POST /events                         │
-       │  Authorization: Bearer <JWT>          │
+       │  POST /events                          │
+       │  Authorization: Bearer <JWT>         │
        │ ─────────────────────────────────────►│
        │                                       │ verify JWT
        │                                       │ createdBy := jwt.sub
-       │  201 EventResponse                    │
+       │  201 EventResponse                   │
        │ ◄─────────────────────────────────────│
 ```
 
-Identity for authenticated operations is **always** derived from the JWT
-(`request.user.id`). Client-supplied user identifiers in the request body are
-ignored.
+### 🔑 Key Points
+
+- Identity for authenticated operations is **always** derived from the JWT (`request.user.id`)
+- Client-supplied user identifiers in the request body are **ignored**
+- JWT tokens expire after `JWT_EXPIRES_IN` duration (default: `1h`)
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 src/
 ├── auth/
-│   ├── auth.controller.js
+│   ├── auth.controller.js         # Auth endpoints (register, login)
 │   ├── auth.module.js
-│   ├── auth.service.js
-│   ├── auth.service.spec.js
+│   ├── auth.service.js            # JWT signing, password hashing
+│   ├── auth.service.spec.js       # Auth unit tests
 │   ├── decorators/
 │   │   └── current-user.decorator.js
 │   ├── dto/
@@ -275,31 +284,31 @@ src/
 │   │   ├── login.dto.js
 │   │   └── register.dto.js
 │   ├── guards/
-│   │   └── jwt-auth.guard.js
+│   │   └── jwt-auth.guard.js      # JWT protection
 │   └── strategies/
-│       └── jwt.strategy.js
+│       └── jwt.strategy.js         # Passport JWT strategy
 ├── users/
 │   ├── users.module.js
-│   └── users.service.js
+│   └── users.service.js            # User CRUD operations
 ├── events/
-│   ├── events.controller.js
+│   ├── events.controller.js        # Event CRUD endpoints
 │   ├── events.module.js
-│   ├── events.service.js
-│   ├── events.service.spec.js
+│   ├── events.service.js           # Event business logic
+│   ├── events.service.spec.js     # Event unit tests
 │   └── dto/
 │       ├── create-event.dto.js
 │       ├── event-response.dto.js
 │       └── update-event.dto.js
 ├── rsvp/
-│   ├── rsvp.controller.js
+│   ├── rsvp.controller.js         # RSVP endpoints
 │   ├── rsvp.module.js
-│   ├── rsvp.service.js
-│   ├── rsvp.service.spec.js
+│   ├── rsvp.service.js             # RSVP business logic
+│   ├── rsvp.service.spec.js        # RSVP unit tests
 │   └── dto/
 │       └── attendee.dto.js
 ├── database/
 │   ├── config/
-│   │   └── config.js
+│   │   └── config.js               # Sequelize config from env
 │   ├── database.module.js
 │   ├── migrations/
 │   │   ├── 20260101000001-create-users.js
@@ -307,101 +316,257 @@ src/
 │   │   └── 20260101000003-create-rsvps.js
 │   └── models/
 │       ├── event.model.js
-│       ├── index.js
+│       ├── index.js                # Model associations
 │       ├── rsvp.model.js
 │       └── user.model.js
 ├── app.module.js
-└── main.js
+└── main.js                         # Bootstrap + Swagger setup
 ```
 
-> **Design note** — models live under `src/database/models/` rather than
-> spread across each feature module. That keeps the data layer (models,
-> migrations, config) in one place and avoids circular imports between
-> feature modules that all need the User / Event / Rsvp classes.
+> 💡 **Design Note** — Models live under `src/database/models/` rather than
+> spread across feature modules. This keeps the data layer centralized and
+> avoids circular imports between modules that all need User / Event / Rsvp.
 
 ---
 
-## Reliability Notes
+## ✅ RSVP Concurrency Protection
 
-### RSVP concurrency
-
-`POST /events/:id/rsvp` performs:
+`POST /events/:id/rsvp` uses **pessimistic locking** to prevent race conditions:
 
 ```
 BEGIN
-  SELECT ... FROM events WHERE id = :id FOR UPDATE   -- row lock
-  (pre-check duplicate RSVP under lock)
-  SELECT COUNT(*) FROM rsvps WHERE event_id = :id
-  (check capacity under lock)
-  INSERT INTO rsvps (event_id, user_id) VALUES (...)
+  SELECT ... FROM events WHERE id = :id FOR UPDATE   -- 🔒 row lock
+  SELECT COUNT(*) FROM rsvps WHERE event_id = :id   -- count current RSVPs
+  -- capacity check under lock
+  INSERT INTO rsvps (event_id, user_id) VALUES (...) -- ✅ insert
 COMMIT
 ```
 
-This serialises concurrent RSVPs against the same event so capacity cannot be
-exceeded. The DB-level `UNIQUE(event_id, user_id)` constraint is the final
-safety net against duplicates even if any application-level check is bypassed.
-
-### Ownership
-
-Update and delete operations are guarded by `event.createdBy === requester.id`.
-A failed check returns `403 Forbidden`. The check is performed inside the
-service (not the controller) so it cannot be skipped by an alternative HTTP
-surface.
-
-### Password storage
-
-Passwords are stored as **bcrypt** hashes with `BCRYPT_SALT_ROUNDS` rounds.
-The `passwordHash` field is never returned by the API and never logged.
+This ensures:
+- ⚡ Concurrent RSVPs are serialized
+- 🎯 Capacity cannot be exceeded
+- 🔒 DB-level `UNIQUE(event_id, user_id)` prevents duplicates
 
 ---
 
-## Testing
+## 🏠 Ownership Rules
 
-Unit tests focus on the business-critical behaviour:
+| Operation         | Who can do it?              | Error if not owner |
+| ---------------- | --------------------------- | ------------------ |
+| Update event     | Event owner only            | `403 Forbidden`    |
+| Delete event     | Event owner only            | `403 Forbidden`    |
+| Create event     | Any authenticated user      | —                  |
+| View events      | Anyone (no auth required)   | —                  |
+| RSVP to event    | Any authenticated user      | —                  |
+| View attendees   | Any authenticated user      | —                  |
+
+Ownership checks live in the **service layer**, not the controller, so they can't be bypassed.
+
+---
+
+## 🧪 Testing
+
+Run the full test suite:
 
 ```bash
 npm test
 ```
 
-Current coverage:
+### Test Coverage
 
-* `auth.service.spec.js` — registration, login, duplicate email, no passwordHash in responses.
-* `events.service.spec.js` — create with JWT-derived owner, ownership on update/delete, 404, endDate validation, attendee count.
-* `rsvp.service.spec.js` — happy path, missing event, duplicate RSVP, capacity enforcement, DB UNIQUE mapped to 409, attendee projection.
+| Test File              | What's Tested                                    |
+| ---------------------- | ------------------------------------------------ |
+| `auth.service.spec.js` | Registration, login, duplicate email, no password hash in responses |
+| `events.service.spec.js` | Create with JWT owner, ownership enforcement, 404, date validation, attendee count |
+| `rsvp.service.spec.js` | Happy path, missing event, duplicate RSVP, capacity limits, DB constraint errors |
 
-Tests use Jest with `babel-jest` so the same decorator / class-field syntax
-that runs the app also runs in tests. No external DB is required for the
-unit suite.
+> 💡 Tests use Jest with `babel-jest` and mock the database — no external PostgreSQL needed!
 
 ---
 
-## Configuration Reference
+## ⚙️ Configuration Reference
 
 | Variable              | Required | Default       | Description                                |
 | --------------------- | -------- | ------------- | ------------------------------------------ |
-| `NODE_ENV`            | no       | `development` | Runtime environment                        |
-| `PORT`                | no       | `3000`        | HTTP port                                  |
-| `DATABASE_HOST`       | yes      | —             | PostgreSQL host                            |
-| `DATABASE_PORT`       | yes      | `5432`        | PostgreSQL port                            |
-| `DATABASE_NAME`       | yes      | —             | Database name                              |
-| `DATABASE_USER`       | yes      | —             | Database user                              |
-| `DATABASE_PASSWORD`   | yes      | —             | Database password                          |
-| `DATABASE_LOGGING`    | no       | `false`       | Set `true` to log SQL                      |
-| `JWT_SECRET`          | yes      | —             | JWT signing secret                         |
-| `JWT_EXPIRES_IN`      | no       | `1h`          | JWT lifetime (e.g. `15m`, `1h`, `7d`)     |
-| `BCRYPT_SALT_ROUNDS`  | no       | `10`          | Cost factor for bcrypt                     |
+| `NODE_ENV`            | No       | `development` | Runtime environment                        |
+| `PORT`                | No       | `3000`        | HTTP port                                  |
+| `DATABASE_HOST`       | Yes      | —             | PostgreSQL host                            |
+| `DATABASE_PORT`       | Yes      | `5432`        | PostgreSQL port                            |
+| `DATABASE_NAME`       | Yes      | —             | Database name                              |
+| `DATABASE_USER`       | Yes      | —             | Database user                              |
+| `DATABASE_PASSWORD`   | Yes      | —             | Database password                          |
+| `DATABASE_LOGGING`    | No       | `false`       | Enable SQL logging (`true` / `false`)      |
+| `JWT_SECRET`          | Yes      | —             | JWT signing secret (use a long random string) |
+| `JWT_EXPIRES_IN`      | No       | `1h`          | JWT lifetime (e.g., `15m`, `1h`, `7d`)    |
+| `BCRYPT_SALT_ROUNDS`  | No       | `10`          | bcrypt cost factor                         |
 
 ---
 
-## Out of Scope (Deliberately)
+## 🔒 Security Notes
 
-The MVP intentionally does not include:
+### Implemented ✅
 
-* Frontend / admin dashboard
-* Roles & permissions (only "owner vs everyone else")
-* Email / push notifications
-* Search, advanced filtering, pagination
-* Caching layer (Redis), queues, microservices
-* File uploads
-* Payments, social login
-* Distributed tracing / ELK / Prometheus
+- **bcrypt** password hashing with configurable salt rounds
+- **JWT** bearer token authentication
+- **Sequelize parameterized queries** — no SQL injection
+- **class-validator** request validation
+- Password hash **never returned** in API responses
+- Ownership checks prevent unauthorized event modifications
+
+### Production Recommendations 🔧
+
+- Use a **strong, random** `JWT_SECRET` (32+ characters)
+- Enable **HTTPS** in production
+- Use a **managed PostgreSQL** instance (AWS RDS, Supabase, etc.)
+- Set `DATABASE_LOGGING=false` in production
+- Consider **rate limiting** for auth endpoints
+- Add **CORS** configuration if serving a frontend
+
+---
+
+## 📦 Out of Scope (Deliberately Omitted)
+
+This MVP intentionally does **not** include:
+
+- 🖥️ Frontend / admin dashboard
+- 👥 Roles & permissions (only "owner vs everyone else")
+- 📧 Email / push notifications
+- 🔍 Search, advanced filtering, pagination
+- 🗄️ Redis caching, message queues, microservices
+- 📁 File uploads / image storage
+- 💳 Payment processing
+- 🔑 Social login (Google, GitHub, etc.)
+- 📊 Distributed tracing / monitoring (Prometheus, ELK)
+
+---
+
+## 🎯 API Request/Response Examples
+
+### Register a User
+
+```http
+POST /auth/register
+Content-Type: application/json
+
+{
+  "name": "Alice Johnson",
+  "email": "alice@example.com",
+  "password": "SecurePass123!"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "Alice Johnson",
+    "email": "alice@example.com"
+  }
+}
+```
+
+### Login
+
+```http
+POST /auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "SecurePass123!"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "Alice Johnson",
+    "email": "alice@example.com"
+  }
+}
+```
+
+### Create an Event
+
+```http
+POST /events
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+
+{
+  "title": "Tech Conference 2026",
+  "description": "Annual technology conference with keynote speakers",
+  "location": "Convention Center, San Francisco",
+  "startDate": "2026-06-15T09:00:00Z",
+  "endDate": "2026-06-15T18:00:00Z",
+  "capacity": 500
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": "660e8400-e29b-41d4-a716-446655440001",
+  "title": "Tech Conference 2026",
+  "description": "Annual technology conference with keynote speakers",
+  "location": "Convention Center, San Francisco",
+  "startDate": "2026-06-15T09:00:00.000Z",
+  "endDate": "2026-06-15T18:00:00.000Z",
+  "capacity": 500,
+  "attendeeCount": 0,
+  "createdBy": "550e8400-e29b-41d4-a716-446655440000",
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-01-01T00:00:00.000Z"
+}
+```
+
+### RSVP to an Event
+
+```http
+POST /events/660e8400-e29b-41d4-a716-446655440001/rsvp
+Authorization: Bearer <JWT_TOKEN>
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": "770e8400-e29b-41d4-a716-446655440002",
+  "eventId": "660e8400-e29b-41d4-a716-446655440001",
+  "userId": "550e8400-e29b-41d4-a716-446655440000",
+  "createdAt": "2026-01-01T00:00:00.000Z"
+}
+```
+
+### Get Event Attendees
+
+```http
+GET /events/660e8400-e29b-41d4-a716-446655440001/attendees
+Authorization: Bearer <JWT_TOKEN>
+```
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "Alice Johnson",
+    "email": "alice@example.com",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  }
+]
+```
+
+---
+
+## 📞 Need Help?
+
+1. Check the **Swagger UI** at `http://localhost:3000/api/docs`
+2. Review the **Configuration Reference** above
+3. Inspect the **source code** in `src/` for implementation details
+
+Happy coding! 🚀

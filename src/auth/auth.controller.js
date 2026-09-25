@@ -37,8 +37,8 @@ class AuthController {
     summary: 'Register a new user and obtain a JWT',
     description:
       'Creates a new user account with the provided name, email, and password. ' +
-      'On success, returns a signed JWT access token (24-hour expiry) along with ' +
-      'the created user profile. Email addresses must be unique across all users.',
+      'On success, returns a signed JWT access token (duration is controlled by the JWT_EXPIRES_IN ' +
+      'env var, default 1 h) and the created user profile. Email addresses must be unique across all users.',
   })
   @ApiBody({ type: RegisterDto })
   @ApiCreatedResponse({ description: 'User registered successfully', type: AuthResponseDto })
@@ -54,7 +54,7 @@ class AuthController {
     summary: 'Log in with email + password and obtain a JWT',
     description:
       'Authenticates a user with their email and password. On success, returns ' +
-      'a signed JWT access token (24-hour expiry) along with the user profile. ' +
+      'a signed JWT access token (duration is controlled by the JWT_EXPIRES_IN env var, default 1 h) and the user profile. ' +
       'Use the returned token as `Bearer <token>` in the `Authorization` header ' +
       'for all protected endpoints.',
   })
