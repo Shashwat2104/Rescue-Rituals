@@ -11,6 +11,7 @@ const {
 const { DocumentBuilder, SwaggerModule } = require('@nestjs/swagger');
 
 const { AppModule } = require('./app.module');
+const { HttpExceptionFilter } = require('./common/filters/http-exception.filter');
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -29,6 +30,10 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: false },
     }),
   );
+
+  // Global exception filter: catches all unhandled errors and returns
+  // consistent JSON error responses.
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   // --- Swagger / OpenAPI -------------------------------------------------
   const swaggerConfig = new DocumentBuilder()
@@ -65,7 +70,6 @@ async function bootstrap() {
 }
 
 bootstrap().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error('Fatal error during bootstrap:', err);
   process.exit(1);
 });
