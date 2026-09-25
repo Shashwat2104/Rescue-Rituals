@@ -1,0 +1,12 @@
+/**
+ * Sequelize CLI configuration.
+ * Keeps migrations and DB config inside src/database/ alongside the rest of the data layer.
+ */
+const path = require('path');
+
+module.exports = {
+  config: path.resolve('src/database/config', 'config.js'),
+  'models-path': path.resolve('src/database', 'models'),
+  'seeders-path': path.resolve('src/database', 'seeders'),
+  'migrations-path': path.resolve('src/database', 'migrations'),
+};

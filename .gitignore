@@ -1,0 +1,42 @@
+# compiled output
+/dist
+/node_modules
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.vscode/
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Local certificates and keys
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Misc
+*.tgz
+.cache
+*.pid
