@@ -31,9 +31,8 @@ async function bootstrap() {
     }),
   );
 
-  // Global exception filter: catches all unhandled errors and returns
-  // consistent JSON error responses.
-  app.useGlobalFilters(new HttpExceptionFilter());
+  // Global exception filter temporarily disabled — testing bare 500
+  // app.useGlobalFilters(new HttpExceptionFilter());
 
   // --- Swagger / OpenAPI -------------------------------------------------
   const swaggerConfig = new DocumentBuilder()

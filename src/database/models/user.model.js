@@ -37,6 +37,7 @@ function initUser(sequelize) {
       passwordHash: {
         type: DataTypes.STRING(255),
         allowNull: false,
+        field: 'password_hash',
       },
       createdAt: {
         type: DataTypes.DATE,

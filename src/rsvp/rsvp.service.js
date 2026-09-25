@@ -115,7 +115,7 @@ class RsvpService {
       // Only rollback if the transaction hasn't already been finalised.
       try {
         await transaction.rollback();
-      } catch (_) {
+      } catch {
         /* already rolled back */
       }
       throw err;

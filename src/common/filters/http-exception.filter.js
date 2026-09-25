@@ -1,6 +1,7 @@
 'use strict';
 
-const { ExceptionFilter, Catch, HttpStatus, HttpException, Logger } = require('@nestjs/common');
+const { HttpStatus, HttpException, Logger } = require('@nestjs/common');
+const { BaseExceptionFilter } = require('@nestjs/core');
 
 /**
  * Global exception filter that catches all unhandled errors and returns
@@ -10,9 +11,11 @@ const { ExceptionFilter, Catch, HttpStatus, HttpException, Logger } = require('@
  * - HttpException (4xx/5xx with message + statusCode)
  * - Generic Error / TypeError / ReferenceError
  * - Promise rejections (unhandled async errors)
+ *
+ * Note: extends BaseExceptionFilter (the correct NestJS 10 base class)
+ * instead of the non-existent ExceptionFilter export.
  */
-@Catch()
-class HttpExceptionFilter extends ExceptionFilter {
+class HttpExceptionFilter extends BaseExceptionFilter {
   constructor() {
     super();
     this.logger = new Logger(HttpExceptionFilter.name);
